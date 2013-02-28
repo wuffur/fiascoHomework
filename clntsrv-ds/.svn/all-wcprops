@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/oc/tudos/!svn/ver/40/trunk/l4/pkg/examples/clntsrv
+END
+clntsrv.cfg
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/oc/tudos/!svn/ver/19/trunk/l4/pkg/examples/clntsrv/clntsrv.cfg
+END
+server.cc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/oc/tudos/!svn/ver/40/trunk/l4/pkg/examples/clntsrv/server.cc
+END
+shared.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/oc/tudos/!svn/ver/11/trunk/l4/pkg/examples/clntsrv/shared.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/oc/tudos/!svn/ver/38/trunk/l4/pkg/examples/clntsrv/Makefile
+END
+client.cc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/oc/tudos/!svn/ver/40/trunk/l4/pkg/examples/clntsrv/client.cc
+END
