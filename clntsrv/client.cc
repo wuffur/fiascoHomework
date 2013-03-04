@@ -26,14 +26,18 @@ static int
 encrypt_call(L4::Cap<void> const &server, char **result, unsigned long* result_size,
               const char *plaintext, unsigned long size)
 {
+  if (size > MAX_MSG_SIZE)
+    {
+      puts("Error. The plaintext is too long")
+	return -1;
+    }
   L4::Ipc::Iostream s(l4_utcb());
-  s << l4_umword_t(Opcode::func_encrypt) << size << L4::Ipc::buf_cp_out(plaintext,size);
-  
+  s << l4_umword_t(Opcode::func_encrypt) << L4::Ipc::buf_cp_out(plaintext,size);
   int r = l4_error(s.call(server.cap(), Protocol::Encryption));
   if (r)
     return r; // failure
-  s>>*result_size;
-  *result = new char[*result_size];
+  *result = new char[MAX_MSG_SIZE];
+  *result_size = MAX_MSG_SIZE;
   s >> L4::Ipc::buf_cp_in(*result, *result_size);
   return 0; // ok
 }
@@ -42,13 +46,18 @@ static int
 decrypt_call(L4::Cap<void> const &server, char **result, unsigned long* result_size,
               const char *plaintext, unsigned long size)
 {
+  if (size > MAX_MSG_SIZE)
+    {
+      puts("Error. The cipher is too long")
+	return -1;
+    }
   L4::Ipc::Iostream s(l4_utcb());
-  s << l4_umword_t(Opcode::func_decrypt) << size << L4::Ipc::buf_cp_out(plaintext,size);
+  s << l4_umword_t(Opcode::func_decrypt) << L4::Ipc::buf_cp_out(plaintext,size);
   int r = l4_error(s.call(server.cap(), Protocol::Encryption));
   if (r)
     return r; // failure
-  s>>*result_size;
-  *result = new char[*result_size];
+  *result = new char[MAX_MSG_SIZE];
+  *result_size = MAX_MSG_SIZE;
   s >> L4::Ipc::buf_cp_in(*result, *result_size);
   return 0; // ok
 }

@@ -51,21 +51,19 @@ Encryption_server::dispatch(l4_umword_t, L4::Ipc::Iostream &ios)
   switch (opcode)
     {
     case Opcode::func_encrypt:
-      ios >> string_size;
+      string_size = MAX_MSG_SIZE;
       string = new char[string_size];
       ios>>L4::Ipc::buf_cp_in(string, string_size);
       encrypt(&result, &result_size, string, string_size);
-      ios << result_size;
       ios << L4::Ipc::buf_cp_out(result,result_size);
       delete [] string;
       delete [] result;
       return L4_EOK;
     case Opcode::func_decrypt:
-      ios >> string_size;
+      string_size = MAX_MSG_SIZE;
       string = new char[string_size];
       ios>>L4::Ipc::buf_cp_in(string, string_size);
       decrypt(&result, &result_size, string, string_size);
-      ios << result_size;
       ios << L4::Ipc::buf_cp_out(result,result_size);
       delete [] string;
       delete [] result;

@@ -10,6 +10,8 @@
 #pragma once
 
 
+const int max_msg_size = 200;
+
 namespace Opcode {
 enum Opcodes {
   func_encrypt, func_decrypt
