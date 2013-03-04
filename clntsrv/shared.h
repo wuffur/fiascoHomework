@@ -10,7 +10,7 @@
 #pragma once
 
 
-const int max_msg_size = 200;
+const int MAX_MSG_SIZE = 200;
 
 namespace Opcode {
 enum Opcodes {
