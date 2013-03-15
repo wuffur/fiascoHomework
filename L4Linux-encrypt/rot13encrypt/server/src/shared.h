@@ -20,17 +20,17 @@
 
 namespace Opcode {
 enum Opcodes {
-  connect,
-  ready,
-  done,
-  func_encrypt,
-  func_decrypt
+  connect = 0,
+  ready = 1,
+  done = 2,
+  func_encrypt = 3,
+  func_decrypt = 4
 };
 };
 
 namespace Protocol {
 enum Protocols {
-  Encryption
+  Encryption = 15
 };
 };
 

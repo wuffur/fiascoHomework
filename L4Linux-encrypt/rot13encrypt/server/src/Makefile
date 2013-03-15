@@ -1,7 +1,7 @@
-PKGDIR          ?= .
-L4DIR           ?= /home/trav/Projects/L4Re-snapshot/src/l4
+PKGDIR          ?= ../..
+L4DIR           ?= $(PKGDIR)/../../../L4Re-snapshot/src/l4
 
-TARGET                   = rot13encrypt-server
+TARGET                   = rot13encrypt
 SRC_CC			 = server.cc
 REQUIRES_LIBS            = cxx_libc_io cxx_io
 
