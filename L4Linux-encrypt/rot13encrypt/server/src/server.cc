@@ -67,18 +67,22 @@ Encryption_server::dispatch(l4_umword_t obj, L4::Ipc::Iostream &ios)
       puts("Connect recieved");
  
       //Server to client: I'm ready (SmallBuffers are in place)
-      ios.reset();
       ds = L4Re::Util::cap_alloc.alloc<L4Re::Dataspace>();
       if (!ds.is_valid())
 	{
 	  printf("Could not get capability slot!\n");
 	  return -1;
 	}
+      printf("Sending ready: %d\n", Opcode::ready);
+      ios.reset();
       ios<<l4_umword_t(Opcode::ready);
       ios<<L4::Ipc::Small_buf(ds);
       err = l4_error(ios.reply_and_wait(&dst, Protocol::Encryption));
       if(err)
-	return err;
+	{
+	  printf("Error replying: %d\n",err);
+	  return err;
+	}
       
       //Client to server: Sending dataspace;
       l4_msgtag_t t1;
@@ -94,6 +98,7 @@ Encryption_server::dispatch(l4_umword_t obj, L4::Ipc::Iostream &ios)
 	  puts("Bad operation");
 	  return -L4_EAGAIN;
 	}
+      printf("Got operation: %d\n", opcode);
       char *string, *result;
       unsigned long size,result_size;
       /*
@@ -131,6 +136,7 @@ Encryption_server::dispatch(l4_umword_t obj, L4::Ipc::Iostream &ios)
       L4Re::Util::cap_alloc.free(ds, L4Re::Env::env()->task().cap());
 
       //Server to client: Operation done
+      printf("Sending done: %d\n", Opcode::done);
       ios.reset();
       ios<<l4_umword_t(Opcode::done);
       

@@ -21,7 +21,6 @@
 MODULE_LICENSE("GPL");
 
 static dev_t number;
-static struct class *cl;
 static struct cdev c_dev;
 static char* addr;
 static char* result;
@@ -56,17 +55,18 @@ static int encrypt_close(struct inode *i, struct file *f)
   printk(KERN_INFO "Driver: close()\n");
   if((f->f_flags & O_ACCMODE)==O_WRONLY)
     {
+      printk(KERN_INFO "Connecting to server");
       mr = l4_utcb_mr();
       mr->mr[0] = (l4_umword_t)ENCRYPT_CONNECT;
       tag = l4_msgtag(ENCRYPT_PROTO, 1 ,0,0);
 
       ret = l4_ipc_call(server, l4_utcb(), tag, L4_IPC_NEVER);
-      
       if(mr->mr[0] != ENCRYPT_READY)
 	{
-	  printk("Error. Server is not ready");
+	  printk(KERN_INFO "Error. Server is not ready\n");
 	  return -1;
 	}
+      printk(KERN_INFO "Server is ready\n");
       
       //Get memory
       if ((err=l4re_ma_alloc(size, ds, 0)))
@@ -76,6 +76,7 @@ static int encrypt_close(struct inode *i, struct file *f)
       if ((err = l4re_rm_attach((void**)&addr, size, L4RE_RM_SEARCH_ADDR, ds, 0, L4_PAGESHIFT)))
 	return err;
       
+      printk(KERN_INFO "Sending dataspace\n");
       memcpy(addr, string, size);
       mr->mr[0] = ENCRYPT_ENCRYPT;
       mr->mr[1] = L4_ITEM_MAP | ((l4_umword_t)L4_MAP_ITEM_MAP);
@@ -85,9 +86,12 @@ static int encrypt_close(struct inode *i, struct file *f)
       ret = l4_ipc_call(server, l4_utcb(), tag, L4_IPC_NEVER);
       if(mr->mr[0] != ENCRYPT_DONE)
 	{
-	  printk("Error.");
+	  err = mr->mr[0];
+	  printk(KERN_INFO "Error. Waited for %d, but got %d\n",ENCRYPT_DONE, err);
 	  return -1;
 	}
+      printk(KERN_INFO "Done recieved\n");
+
       
       memcpy(string, addr, size);
       result = string;
@@ -176,17 +180,6 @@ static int __init encrypt_init(void)
   printk(KERN_INFO "L4Encrypt: Chardev allocated major: %d, minor %d\n", 
 	 MAJOR(number), MINOR(number));
 
-  if((cl = class_create(THIS_MODULE, "L4ROT13Encrypt")) == NULL)
-    {
-      unregister_chrdev_region(number,1);
-      return -1;
-    }
-  if (device_create(cl,NULL,number,NULL,"enc0")== NULL)
-    {
-      class_destroy(cl);
-      unregister_chrdev_region(number,1);
-      return-1;
-    }
 
   cdev_init(&c_dev, &encrypt_fops);
   if (cdev_add(&c_dev, number, 1) == -1)
@@ -203,9 +196,9 @@ static int __init encrypt_init(void)
       unregister_chrdev_region(number,1);
       return -1;
     }
-  printk(KERN_INFO "Dataspace capability obtained\n");
+  printk(KERN_INFO "L4Encrypt: Dataspace capability obtained\n");
   /* Getting server capability*/
-  server = l4re_env_get_cap("crypt-server");
+  server = l4re_env_get_cap("crypt_server");
   if(l4_is_invalid_cap(server))
     {
       l4re_util_cap_free(ds);
@@ -214,7 +207,7 @@ static int __init encrypt_init(void)
       return -1;
     }
   env = l4re_env();
-  printk(KERN_INFO "Server capability obtained\n");
+  printk(KERN_INFO "L4Encrypt: Server capability obtained\n");
   
 
   return 0;
