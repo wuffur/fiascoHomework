@@ -33,16 +33,10 @@ static size_t result_size;
 
 static int encrypt_open(struct inode *i, struct file *f)
 {
-  printk(KERN_INFO "Driver: open()\n");
   if((f->f_flags & O_ACCMODE)==O_WRONLY)
     {
-      printk("Writing to device\n");
       size = 0;
       kfree(string);
-    }
-  if((f->f_flags & O_ACCMODE)==O_RDONLY)
-    {
-      printk("Reading from device\n");
     }
   return 0;
 }
@@ -52,10 +46,8 @@ static int encrypt_close(struct inode *i, struct file *f)
   l4_msg_regs_t *mr;
   l4_msgtag_t tag,ret;
   int err;
-  printk(KERN_INFO "Driver: close()\n");
   if((f->f_flags & O_ACCMODE)==O_WRONLY)
     {
-      printk(KERN_INFO "Connecting to server");
       mr = l4_utcb_mr();
       mr->mr[0] = (l4_umword_t)ENCRYPT_CONNECT;
       tag = l4_msgtag(ENCRYPT_PROTO, 1 ,0,0);
@@ -63,10 +55,8 @@ static int encrypt_close(struct inode *i, struct file *f)
       l4_ipc_call(server, l4_utcb(), tag, L4_IPC_NEVER);
       if(mr->mr[0] != ENCRYPT_READY)
 	{
-	  printk(KERN_INFO "Error. Server is not ready\n");
 	  return -1;
 	}
-      printk(KERN_INFO "Server is ready\n");
       
       //Get memory
       if ((err=l4re_ma_alloc(size, ds, 0)))
@@ -76,7 +66,6 @@ static int encrypt_close(struct inode *i, struct file *f)
       if ((err = l4re_rm_attach((void**)&addr, size, L4RE_RM_SEARCH_ADDR, ds, 0, L4_PAGESHIFT)))
 	return err;
       
-      printk(KERN_INFO "Sending dataspace\n");
       memcpy(addr, string, size);
       mr->mr[0] = ENCRYPT_ENCRYPT;
       mr->mr[1] = L4_ITEM_MAP | ((l4_umword_t)L4_MAP_ITEM_MAP);
@@ -84,18 +73,11 @@ static int encrypt_close(struct inode *i, struct file *f)
       tag = l4_msgtag(ENCRYPT_PROTO, 1, 1, 0);
 
       ret = l4_ipc_call(server, l4_utcb(), tag, L4_IPC_NEVER);
-      err = l4_error(ret);
-      if (err)
-	{
-	  printk(KERN_INFO "Error calling server: %d\n",err);
-	}
       if(mr->mr[0] != ENCRYPT_DONE)
 	{
 	  err = mr->mr[0];
-	  printk(KERN_INFO "Error. Waited for %d, but got %d\n",ENCRYPT_DONE, err);
 	  return -1;
 	}
-      printk(KERN_INFO "Done recieved\n");
       
       memcpy(string, addr, size);
       result = string;
@@ -110,15 +92,8 @@ static int encrypt_close(struct inode *i, struct file *f)
       //Free memory
       if ((err = l4re_ma_free(ds)))
 	return err;
-      printk(KERN_INFO "%s  %d\n", result, result_size); 	
       
     }
-
-  if((f->f_flags & O_ACCMODE)==O_RDONLY)
-    {
-      printk("Reading from device\n");
-    }
-
   return 0;
 }
 
@@ -126,10 +101,8 @@ static ssize_t encrypt_read(struct file *f, char __user *buf, size_t
 		       len, loff_t *off)
 {
   size_t count;
-  printk(KERN_INFO "Driver: read()\n");
   if(*off >= result_size)
     return 0;
-  printk(KERN_INFO "Is not bigger than size");
   if(*off + len > result_size)
     count = result_size - *off;
   else
