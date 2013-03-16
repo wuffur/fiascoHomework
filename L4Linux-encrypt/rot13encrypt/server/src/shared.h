@@ -30,7 +30,7 @@ enum Opcodes {
 
 namespace Protocol {
 enum Protocols {
-  Encryption = 15
+  Encryption = 0x0100L
 };
 };
 

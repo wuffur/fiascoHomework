@@ -77,12 +77,7 @@ Encryption_server::dispatch(l4_umword_t obj, L4::Ipc::Iostream &ios)
       ios.reset();
       ios<<l4_umword_t(Opcode::ready);
       ios<<L4::Ipc::Small_buf(ds);
-      err = l4_error(ios.reply_and_wait(&dst, Protocol::Encryption));
-      if(err)
-	{
-	  printf("Error replying: %d\n",err);
-	  return err;
-	}
+      ios.reply_and_wait(&dst, Protocol::Encryption);
       
       //Client to server: Sending dataspace;
       l4_msgtag_t t1;

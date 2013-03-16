@@ -1,4 +1,4 @@
-#define ENCRYPT_PROTO 15
+#define ENCRYPT_PROTO 0x0100L
 
 enum ENCRYPT_OPCODES
   {

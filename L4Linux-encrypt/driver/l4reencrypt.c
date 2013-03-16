@@ -60,7 +60,7 @@ static int encrypt_close(struct inode *i, struct file *f)
       mr->mr[0] = (l4_umword_t)ENCRYPT_CONNECT;
       tag = l4_msgtag(ENCRYPT_PROTO, 1 ,0,0);
 
-      ret = l4_ipc_call(server, l4_utcb(), tag, L4_IPC_NEVER);
+      l4_ipc_call(server, l4_utcb(), tag, L4_IPC_NEVER);
       if(mr->mr[0] != ENCRYPT_READY)
 	{
 	  printk(KERN_INFO "Error. Server is not ready\n");
@@ -84,6 +84,11 @@ static int encrypt_close(struct inode *i, struct file *f)
       tag = l4_msgtag(ENCRYPT_PROTO, 1, 1, 0);
 
       ret = l4_ipc_call(server, l4_utcb(), tag, L4_IPC_NEVER);
+      err = l4_error(ret);
+      if (err)
+	{
+	  printk(KERN_INFO "Error calling server: %d\n",err);
+	}
       if(mr->mr[0] != ENCRYPT_DONE)
 	{
 	  err = mr->mr[0];
@@ -91,7 +96,6 @@ static int encrypt_close(struct inode *i, struct file *f)
 	  return -1;
 	}
       printk(KERN_INFO "Done recieved\n");
-
       
       memcpy(string, addr, size);
       result = string;
@@ -106,6 +110,7 @@ static int encrypt_close(struct inode *i, struct file *f)
       //Free memory
       if ((err = l4re_ma_free(ds)))
 	return err;
+      printk(KERN_INFO "%s  %d\n", result, result_size); 	
       
     }
 
@@ -122,8 +127,9 @@ static ssize_t encrypt_read(struct file *f, char __user *buf, size_t
 {
   size_t count;
   printk(KERN_INFO "Driver: read()\n");
-  if(*off >= size)
+  if(*off >= result_size)
     return 0;
+  printk(KERN_INFO "Is not bigger than size");
   if(*off + len > result_size)
     count = result_size - *off;
   else
